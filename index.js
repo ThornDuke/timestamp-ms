@@ -35,20 +35,22 @@ app.get("/api", (req, res) => {
 });
 
 app.get("/api/:param", (req, res) => {
-  const unixFormatRe = /^[0-9]+$/;
-  const utcFormatRe = /^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/;
   const param = req.params.param;
 
-  if (unixFormatRe.test(param)) {
+  const testDate = new Date(Number.isInteger(Number(param)) ? Number(param) : param);
+  if (Number.isNaN(testDate.valueOf())) {
+    // incorrect date format
+    res.status(200);
+    res.json({ error: "Invalid date" });
+  } else if (Number.isInteger(Number(param))) {
+    // date as a unix number
     const date = new Date(Number(param)).toUTCString();
-    res.json({ unix: param, utc: date });
-  } else if (utcFormatRe.test(param)) {
+    res.json({ unix: Number(param), utc: date });
+  } else {
+    // date as a string
     const dateValue = new Date(param).valueOf();
     const dateUtc = new Date(param).toUTCString();
     res.json({ unix: dateValue, utc: dateUtc });
-  } else {
-    res.status(200);
-    res.json({ error: "Incorrect API format" });
   }
 });
 
